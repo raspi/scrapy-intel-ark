@@ -8,9 +8,11 @@ Web crawler for Intel ARK ([ark.intel.com](https://ark.intel.com))
 
 ## CPU specs spider
 
+Downloads all CPU specifications as JSON files.
+
     scrapy crawl cpuspecs
     
-Everything is downloaded to `items/cpuspecs` directory in JSON format. Each CPU is in it's own socket directory. 
+Everything is downloaded to `items/cpuspecs` directory. Each CPU is in it's own socket subdirectory. 
 
 ### Notes
 * 30 day cache is used in `settings.py`
