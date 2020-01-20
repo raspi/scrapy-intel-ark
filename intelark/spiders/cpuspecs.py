@@ -62,6 +62,10 @@ convertTo = {
 
 
 class BaseSpider(scrapy.Spider):
+    """
+    Base spider for common tasks
+    """
+
     def parse(self, response):
         raise NotImplementedError
 
@@ -110,7 +114,7 @@ class BaseSpider(scrapy.Spider):
 
         # Specification object is now complete
         if "SocketsSupported" not in specs["Package Specifications"]:
-            self.logger.error("Socket(s) for product not found, skipping")
+            self.logger.error("Socket(s) for CPU not found, skipping")
             return
 
         if "ProcessorNumber" not in specs["Essentials"]:
