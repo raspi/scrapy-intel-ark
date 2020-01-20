@@ -23,7 +23,7 @@ class IntelarkPipeline(object):
         # Save to temporary file
         tmpf = NamedTemporaryFile("w", prefix="cpu-specs-", suffix=".json", encoding="utf8", delete=False)
         with tmpf as f:
-            json.dump(item, f, indent=2)
+            json.dump(item, f)
             f.flush()
             spider.logger.info(f"saved as {f.name}")
 
