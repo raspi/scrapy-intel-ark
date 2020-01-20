@@ -69,13 +69,26 @@ class BaseSpider(scrapy.Spider):
     def parse(self, response):
         raise NotImplementedError
 
+    def cleantxt(self, v: str) -> str:
+        v = v.replace("Intel", "")
+        v = v.replace("\u2122", " ")  # tm
+        v = v.replace("\u00ae", " ")  # (c)
+
+        v = ' '.join(v.split())
+        v = v.strip()
+        return v
+
     def parse_specs(self, response):
         """
         Get specifications of one CPU
         """
 
+        cpuname = response.xpath("//div/h1/text()").get()
+        cpuname = self.cleantxt(cpuname)
+
         specs = {
             "URL": response.url,
+            "name": cpuname,
         }
 
         for section in response.xpath("//div[@class='arkProductSpecifications']/div/section/div"):
@@ -93,9 +106,7 @@ class BaseSpider(scrapy.Spider):
 
                 v = data.xpath("span[@class='value']//text()").get().strip()
 
-                v = v.replace("Intel\u00ae", "")
-                v = ' '.join(v.split())
-                v = v.strip()
+                v = self.cleantxt(v)
 
                 if v == 'Yes':
                     v = True
@@ -113,24 +124,30 @@ class BaseSpider(scrapy.Spider):
                 specs[header][k] = v
 
         # Specification object is now complete
+        has_socket = True
+        has_id = True
+
         if "SocketsSupported" not in specs["Package Specifications"]:
-            self.logger.error("Socket(s) for CPU not found, skipping")
-            return
+            has_socket = False
 
         if "ProcessorNumber" not in specs["Essentials"]:
-            self.logger.error("CPU product id not found, skipping")
-            return
+            has_id = False
 
-        # many sockets might be supported
-        sockets = specs["Package Specifications"]["SocketsSupported"].split(", ")
-        del specs["Package Specifications"]["SocketsSupported"]
+        if has_id:
+            # CPU specs lists number such as Q6600
+            specs["id"] = specs["Essentials"]["ProcessorNumber"]
+            del specs["Essentials"]["ProcessorNumber"]
 
-        specs["id"] = specs["Essentials"]["ProcessorNumber"]
-        del specs["Essentials"]["ProcessorNumber"]
+        if has_socket:
+            # many sockets might be supported
+            sockets = specs["Package Specifications"]["SocketsSupported"].split(", ")
+            del specs["Package Specifications"]["SocketsSupported"]
 
-        for socket in sockets:
-            specs["socket"] = socket
-            yield CPUSpecsItem(specs)
+            for socket in sockets:
+                specs["socket"] = socket
+                yield CPUSpecsItem(specs)
+        else:
+            yield CPUSpecsUnknownItem(specs)
 
 
 class CpuSpecListSpider(BaseSpider):
