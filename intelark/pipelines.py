@@ -12,10 +12,17 @@ class IntelarkPipeline(object):
     Save CPU specifications
     """
 
+    cpu_legend = CPULegendItem()
+
     def create_path(self, fpath):
         Path(fpath).mkdir(parents=True, exist_ok=True)
 
     def process_item(self, item, spider):
+        if isinstance(item, CPULegendItem):
+            # Update legend information
+            self.cpu_legend.update(item)
+            return
+
         if not (isinstance(item, CPUSpecsItem) or isinstance(item, CPUSpecsUnknownItem)):
             spider.logger.error("Skipped item {0}".format(type(item)))
             return
@@ -50,3 +57,20 @@ class IntelarkPipeline(object):
         # Rename and move the temporary file to actual file
         newpath = move(tmpf.name, fullpath)
         spider.logger.info(f"renamed {tmpf.name} to {newpath}")
+
+    def close_spider(self, spider):
+        if spider.name == "cpuspecs":
+            # Save legend of different fields encountered in crawling
+
+            # Save to temporary file
+            tmpf = NamedTemporaryFile("w", prefix="cpu-legend-", suffix=".json", encoding="utf8", delete=False)
+            with tmpf as f:
+                json.dump(self.cpu_legend, f, indent=2)
+                f.flush()
+                spider.logger.info(f"saved as {f.name}")
+
+            fullpath = os.path.abspath(os.path.join("..", "items", "cpuspecs", "_legend.json"))
+
+            # Rename and move the temporary file to actual file
+            newpath = move(tmpf.name, fullpath)
+            spider.logger.info(f"renamed legend {tmpf.name} to {newpath}")

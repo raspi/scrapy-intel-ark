@@ -9,3 +9,7 @@ class CPUSpecsItem(dict):
 
 class CPUSpecsUnknownItem(dict):
     pass
+
+
+class CPULegendItem(dict):
+    pass

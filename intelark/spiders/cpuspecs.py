@@ -92,11 +92,17 @@ class BaseSpider(scrapy.Spider):
             "name": cpuname,
         }
 
+        # Collect explanations of different fields
+        # For example:
+        # "GraphicsMaxFreq": "Graphics Max Dynamic Frequency"
+        legends = {}
+
         for section in response.xpath("//div[@class='arkProductSpecifications']/div/section/div"):
             header = section.xpath("div/h2/text()").get()
             if header not in specs:
                 # Add header
                 specs[header] = {}
+                legends[header] = {}
 
             for data in section.xpath("ul[@class='specs-list']/li"):
                 # Find specifications under each header
@@ -104,6 +110,9 @@ class BaseSpider(scrapy.Spider):
 
                 if k == "null":
                     continue
+
+                legend = "".join(data.xpath("span[@class='label']//text()").getall()).strip()
+                legends[header][k] = self.cleantxt(legend)
 
                 v = data.xpath("span[@class='value']//text()").get().strip()
 
@@ -125,6 +134,9 @@ class BaseSpider(scrapy.Spider):
                 specs[header][k] = v
 
         # Specification object is now complete
+
+        yield CPULegendItem(legends)
+
         has_socket = True
         has_id = True
 
