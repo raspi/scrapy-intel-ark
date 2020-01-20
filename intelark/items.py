@@ -2,5 +2,6 @@
 
 import scrapy
 
+
 class CPUSpecsItem(dict):
     pass
