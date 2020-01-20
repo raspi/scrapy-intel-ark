@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from intelark.items import CPUSpecsItem
+from intelark.items import *
 
 
 def floatConv(value: str):
@@ -61,30 +61,15 @@ convertTo = {
 }
 
 
-class CpuspecsSpider(scrapy.Spider):
-    """
-    Spider for CPU specifications
-    """
-    name = 'cpuspecs'
-    allowed_domains = ['ark.intel.com']
-    start_urls = ['https://ark.intel.com/content/www/us/en/ark.html']
-
+class BaseSpider(scrapy.Spider):
     def parse(self, response):
-        for panelId in response.xpath("//div[@data-parent-panel-key='Processors']/div/div/@data-panel-key"):
-            # Series such as Core, Atom, Xeon, etc, ....
-            for link in response.xpath(f"//div[@data-parent-panel-key='{panelId.root}']/div/div/span/a/@href"):
-                yield scrapy.Request(response.urljoin(link.root), callback=self.parse_series)
+        raise NotImplementedError
 
-    # Series-specific CPU list such as Atom CPUs
-    def parse_series(self, response):
-        for link in response.xpath("//tr/td/a/@href"):
-            if link.root.find("/products/") == -1:
-                self.logger.error("product not found from link, skipping")
-                continue
-            yield scrapy.Request(response.urljoin(link.root), callback=self.parse_specs)
-
-    # Individual CPU specs
     def parse_specs(self, response):
+        """
+        Get specifications of one CPU
+        """
+
         specs = {
             "URL": response.url,
         }
@@ -115,6 +100,7 @@ class CpuspecsSpider(scrapy.Spider):
                 elif v == '':
                     v = None
                 elif k in convertTo:
+                    # Try to convert value to machine parsable presentation
                     try:
                         v = convertTo[k](v)
                     except ValueError as e:
@@ -141,3 +127,47 @@ class CpuspecsSpider(scrapy.Spider):
         for socket in sockets:
             specs["socket"] = socket
             yield CPUSpecsItem(specs)
+
+
+class CpuSpecListSpider(BaseSpider):
+    """
+    Spider for getting list of CPUs
+    """
+    name = 'cpuspecs'
+    allowed_domains = ['ark.intel.com']
+    start_urls = ['https://ark.intel.com/content/www/us/en/ark.html']
+
+    def parse(self, response):
+        for panelId in response.xpath("//div[@data-parent-panel-key='Processors']/div/div/@data-panel-key"):
+            # Series such as Core, Atom, Xeon, etc, ....
+            for link in response.xpath(f"//div[@data-parent-panel-key='{panelId.root}']/div/div/span/a/@href"):
+                yield scrapy.Request(response.urljoin(link.root), callback=self.parse_series)
+
+    # Series-specific CPU list such as Atom CPUs
+    def parse_series(self, response):
+        for link in response.xpath("//tr/td/a/@href"):
+            if link.root.find("/products/") == -1:
+                self.logger.error("product not found from link, skipping")
+                continue
+            yield scrapy.Request(response.urljoin(link.root), callback=self.parse_specs)
+
+
+class CpuSpecSpider(BaseSpider):
+    """
+    Spider for getting CPU specifications for one CPU
+    """
+    name = 'onecpuspec'
+    allowed_domains = ['ark.intel.com']
+    start_urls = ['https://ark.intel.com/content/www/us/en/ark/products/']
+
+    def __init__(self, url: str):
+        if url == "":
+            url = None
+
+        if url is None:
+            raise ValueError("Invalid url given")
+
+        self.start_urls = [url]
+
+    def parse(self, response):
+        yield self.parse_specs(response)
