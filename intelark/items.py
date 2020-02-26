@@ -11,5 +11,9 @@ class CPUSpecsUnknownItem(dict):
     pass
 
 
+class CPUPriceItem(dict):
+    pass
+
+
 class CPULegendItem(dict):
     pass

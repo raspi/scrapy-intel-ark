@@ -13,6 +13,7 @@ class IntelarkPipeline(object):
     """
 
     cpu_legend = CPULegendItem()
+    cpu_prices = CPUPriceItem()
 
     def create_path(self, fpath):
         Path(fpath).mkdir(parents=True, exist_ok=True)
@@ -20,7 +21,16 @@ class IntelarkPipeline(object):
     def process_item(self, item, spider):
         if isinstance(item, CPULegendItem):
             # Update legend information
-            self.cpu_legend.update(item)
+            for i in item:
+                if i in self.cpu_legend:
+                    self.cpu_legend[i].update(item[i])
+                else:
+                    self.cpu_legend[i] = item[i]
+            # self.cpu_legend.update(item)
+            return
+
+        if isinstance(item, CPUPriceItem):
+            self.cpu_prices.update(item)
             return
 
         if not (isinstance(item, CPUSpecsItem) or isinstance(item, CPUSpecsUnknownItem)):
@@ -37,10 +47,7 @@ class IntelarkPipeline(object):
         basepath = os.path.abspath(os.path.join("..", "items", "cpuspecs"))
         fullpath = os.path.abspath(os.path.join(basepath, "tmp"))
 
-        if "id" in item:
-            fname = item["id"] + ".json"
-        else:
-            fname = item["name"] + ".json"
+        fname = item["number"] + ".json" if "number" in item else item["name"] + ".json"
 
         if isinstance(item, CPUSpecsItem):
             # path for saving
@@ -53,7 +60,6 @@ class IntelarkPipeline(object):
             fpath = os.path.abspath(os.path.join(basepath, "_unknown", item["Essentials"]["MarketSegment"]))
             self.create_path(fpath)
             fullpath = os.path.join(fpath, fname)
-
         # Rename and move the temporary file to actual file
         newpath = move(tmpf.name, fullpath)
         spider.logger.info(f"renamed {tmpf.name} to {newpath}")
@@ -61,16 +67,18 @@ class IntelarkPipeline(object):
     def close_spider(self, spider):
         if spider.name == "cpuspecs":
             # Save legend of different fields encountered in crawling
+            self.saveToFile(spider, self.cpu_legend, "_legend")
+            # Save legend of different fields encountered in crawling
+            self.saveToFile(spider, self.cpu_prices, "cpuprices")
 
-            # Save to temporary file
-            tmpf = NamedTemporaryFile("w", prefix="cpu-legend-", suffix=".json", encoding="utf8", delete=False)
-            with tmpf as f:
-                json.dump(self.cpu_legend, f, indent=2)
-                f.flush()
-                spider.logger.info(f"saved as {f.name}")
-
-            fullpath = os.path.abspath(os.path.join("..", "items", "cpuspecs", "_legend.json"))
-
-            # Rename and move the temporary file to actual file
-            newpath = move(tmpf.name, fullpath)
-            spider.logger.info(f"renamed legend {tmpf.name} to {newpath}")
+    def saveToFile(self, spider, data, name):
+        # Save to temporary file
+        tmpf = NamedTemporaryFile("w", prefix=f"cpuspecs-{name}-", suffix=".json", encoding="utf8", delete=False)
+        with tmpf as f:
+            json.dump(data, f, indent=2)
+            f.flush()
+            spider.logger.info(f"saved as {f.name}")
+        # Rename and move the temporary file to actual file
+        fullpath = os.path.abspath(os.path.join("..", "items", "cpuspecs", f"{name}.json"))
+        newpath = move(tmpf.name, fullpath)
+        spider.logger.info(f"renamed legend {tmpf.name} to {newpath}")
