@@ -16,6 +16,8 @@ Everything is downloaded to `items/cpuspecs` directory. Each CPU is in it's own 
 
 After crawling `_legend.json` is written which has explanations for the fields.
 
+The prices will be written separately to `cpuprices.json`.
+
 ### Notes
 * 30 day cache is used in `settings.py`
 * Some product information pages do **not** contain socket information, so they are written to `_unknown/` directory
