@@ -69,3 +69,6 @@ venv.bak/
 
 # Downloaded by spider
 items
+output.*
+~$*
+*.xlsx

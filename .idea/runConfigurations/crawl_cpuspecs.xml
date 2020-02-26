@@ -6,11 +6,12 @@
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
     </envs>
-    <option name="SDK_HOME" value="$PROJECT_DIR$/venv/bin/python" />
+    <option name="SDK_HOME" value="C:\Python38\python.exe" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/intelark" />
     <option name="IS_MODULE_SDK" value="false" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
+    <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/intelark/_crawl-cpuspecs.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
