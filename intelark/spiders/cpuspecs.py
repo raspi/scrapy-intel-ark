@@ -1,46 +1,27 @@
 # -*- coding: utf-8 -*-
+import json
+
 import scrapy
 
 from intelark.items import *
 
 
-def floatConv(value: str):
-    fl, unit = value.split(" ")
-    return {"value": float(fl), "unit": unit}
+def unitsToNum(value: str, units: map):
+    num, unit = value.split(" ")
+    num = float(num)
+    if int(num) == num:
+        num = int(num)
+    if unit not in units:
+        raise ValueError(f"unit {unit} not in units")
+    return num * units[unit]
 
 
 def sizeToBytes(value: str):
-    num, unit = value.split(" ")
-    num = int(num)
-
-    units = ["B", "KB", "MB", "GB", "TB"]
-    if unit not in units:
-        raise ValueError(f"unit {unit} not in units")
-
-    for idx, u in enumerate(units):
-        if unit == u:
-            break
-
-        num *= 1024
-
-    return num
+    return unitsToNum(value, {"B": 1, "KB": 2 ** 10, "MB": 2 ** 20, "GB": 2 ** 30, "TB": 2 ** 30})
 
 
 def speedToHz(value: str):
-    num, unit = value.split(" ")
-    num = float(num)
-
-    units = ["Hz", "kHz", "MHz", "GHz", "THz"]
-    if unit not in units:
-        raise ValueError(f"unit {unit} not in units")
-
-    for idx, u in enumerate(units):
-        if unit == u:
-            break
-
-        num *= 1000.0
-
-    return num
+    return unitsToNum(value, {"Hz": 1, "kHz": 10 ** 3, "MHz": 10 ** 6, "GHz": 10 ** 9, "THz": 10 ** 12})
 
 
 convertTo = {
@@ -58,6 +39,7 @@ convertTo = {
     "ClockSpeedMax": speedToHz,
     "TurboBoostMaxTechMaxFreq": speedToHz,
     "GraphicsMaxMem": sizeToBytes,
+    # "Cache": sizeToBytes,
 }
 
 
@@ -65,6 +47,9 @@ class BaseSpider(scrapy.Spider):
     """
     Base spider for common tasks
     """
+
+    def __init__(self, name=None, **kwargs):
+        super().__init__(name=None, **kwargs)
 
     def parse(self, response):
         raise NotImplementedError
@@ -86,9 +71,11 @@ class BaseSpider(scrapy.Spider):
 
         cpuname = response.xpath("//div/h1/text()").get()
         cpuname = self.cleantxt(cpuname)
+        cpuid = int(response.url.split('/')[9])
 
         specs = {
             "URL": response.url,
+            "id": cpuid,
             "name": cpuname,
         }
 
@@ -137,19 +124,12 @@ class BaseSpider(scrapy.Spider):
 
         yield CPULegendItem(legends)
 
-        has_socket = True
-        has_id = True
+        has_number = "ProcessorNumber" in specs["Essentials"]
+        has_socket = "SocketsSupported" in specs["Package Specifications"]
 
-        if "SocketsSupported" not in specs["Package Specifications"]:
-            has_socket = False
-
-        if "ProcessorNumber" not in specs["Essentials"]:
-            has_id = False
-
-        if has_id:
+        if has_number:
             # CPU specs lists number such as Q6600
-            specs["id"] = specs["Essentials"]["ProcessorNumber"]
-            del specs["Essentials"]["ProcessorNumber"]
+            specs["number"] = specs["Essentials"]["ProcessorNumber"]
 
         if has_socket:
             # many sockets might be supported
@@ -161,6 +141,17 @@ class BaseSpider(scrapy.Spider):
                 yield CPUSpecsItem(specs)
         else:
             yield CPUSpecsUnknownItem(specs)
+        priceURL = f'https://ark.intel.com/libs/apps/intel/support/ark/recommendedCustomerPrice?ids={cpuid}&siteName=ark'
+        yield scrapy.Request(priceURL, callback=self.parse_price)
+
+    def parse_price(self, response):
+        try:
+            data = json.loads(response.body_as_unicode())
+            id = int(data[0]['id'])
+            price = data[0]['displayPrice']
+            yield CPUPriceItem({id: price})
+        except:
+            self.logger.error("no price found for " + response.url)
 
 
 class CpuSpecListSpider(BaseSpider):
