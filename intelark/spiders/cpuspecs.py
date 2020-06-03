@@ -144,21 +144,23 @@ class BaseSpider(scrapy.Spider):
 
         yield CPULegendItem(legends)
 
-        has_socket = True
-        has_id = True
+        has_socket = False
+        has_id = False
 
-        if "SocketsSupported" not in specs["Package Specifications"]:
-            has_socket = False
+        if "SocketsSupported" in specs["Package Specifications"]:
+            has_socket = True
 
-        if "ProcessorNumber" not in specs["Essentials"]:
-            has_id = False
+        if "ProcessorNumber" in specs["Essentials"]:
+            has_id = True
 
         if has_id:
             # CPU specs lists number such as Q6600
             specs["id"] = specs["Essentials"]["ProcessorNumber"]
             del specs["Essentials"]["ProcessorNumber"]
 
-        if has_socket:
+        if not has_socket:
+            yield CPUSpecsUnknownItem(specs)
+        else:
             # many sockets might be supported
             sockets = specs["Package Specifications"]["SocketsSupported"].split(", ")
             del specs["Package Specifications"]["SocketsSupported"]
@@ -166,8 +168,6 @@ class BaseSpider(scrapy.Spider):
             for socket in sockets:
                 specs["socket"] = socket
                 yield CPUSpecsItem(specs)
-        else:
-            yield CPUSpecsUnknownItem(specs)
 
 
 class CpuSpecListSpider(BaseSpider):
