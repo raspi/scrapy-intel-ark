@@ -20,7 +20,11 @@ class IntelarkPipeline(object):
     def process_item(self, item, spider):
         if isinstance(item, CPULegendItem):
             # Update legend information
-            self.cpu_legend.update(item)
+            for i in item:
+                if i in self.cpu_legend:
+                    self.cpu_legend[i].update(item[i])
+                else:
+                    self.cpu_legend[i] = item[i]
             return
 
         if not (isinstance(item, CPUSpecsItem) or isinstance(item, CPUSpecsUnknownItem)):
