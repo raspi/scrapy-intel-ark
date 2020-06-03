@@ -81,7 +81,7 @@ class BaseSpider(scrapy.Spider):
         v = v.strip()
         return v
 
-    def parse_specs(self, response):
+    def parse_specs(self, response: scrapy.http.Response):
         """
         Get specifications of one CPU
         """
@@ -178,14 +178,14 @@ class CpuSpecListSpider(BaseSpider):
     allowed_domains = ['ark.intel.com']
     start_urls = ['https://ark.intel.com/content/www/us/en/ark.html']
 
-    def parse(self, response):
+    def parse(self, response: scrapy.http.Response):
         for panelId in response.xpath("//div[@data-parent-panel-key='Processors']/div/div/@data-panel-key"):
             # Series such as Core, Atom, Xeon, etc, ....
             for link in response.xpath(f"//div[@data-parent-panel-key='{panelId.root}']/div/div/span/a/@href"):
                 yield scrapy.Request(response.urljoin(link.root), callback=self.parse_series)
 
     # Series-specific CPU list such as Atom CPUs
-    def parse_series(self, response):
+    def parse_series(self, response: scrapy.http.Response):
         for link in response.xpath("//tr/td/a/@href"):
             if link.root.find("/products/") == -1:
                 self.logger.error("product not found from link, skipping")
