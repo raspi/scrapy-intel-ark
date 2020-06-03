@@ -6,7 +6,14 @@ Web crawler for Intel ARK ([ark.intel.com](https://ark.intel.com))
 * Python
 * [Scrapy](https://scrapy.org/)
 
-## CPU specs spider
+## Notes
+
+* 30 day cache is used in `settings.py`
+* Some product information pages do **not** contain socket information, so they are written to `_unknown/` directory
+
+## Spiders
+
+### CPU specs spider
 
 Downloads all CPU specifications as JSON files.
 
@@ -16,19 +23,14 @@ Everything is downloaded to `items/cpuspecs` directory. Each CPU is in it's own 
 
 After crawling `_legend.json` is written which has explanations for the fields.
 
-## Single CPU specs spider
+### Single CPU specs spider
     
     crawl onecpuspec -a url="https://ark.intel.com/content/www/us/en/ark/products/82764/intel-xeon-processor-e5-1630-v3-10m-cache-3-70-ghz.html"
 
 See **CPU specs spider** for info.
     
 
-### Notes
-* 30 day cache is used in `settings.py`
-* Some product information pages do **not** contain socket information, so they are written to `_unknown/` directory
-
-
-## _legend.json
+## `_legend.json`
 
 ```json
 {
