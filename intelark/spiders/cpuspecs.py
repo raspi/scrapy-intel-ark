@@ -187,7 +187,7 @@ class CpuSpecSpider(BaseSpider):
             raise ValueError("Invalid url given")
 
         if url.find("/products/") == -1:
-            self.logger.error("product not found from url, skipping")
+            raise ValueError(f"/products/ not found from url {url}")
 
         self.start_urls = [url]
 
