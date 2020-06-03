@@ -65,7 +65,8 @@ env.bak/
 venv.bak/
 
 # PyCharm
-.idea/workspace.xml
+/.idea/workspace.xml
+/.idea/dbnavigator.xml
 
 # Downloaded by spider
 items
