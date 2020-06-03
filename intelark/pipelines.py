@@ -4,6 +4,9 @@ import json
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from shutil import move
+
+import scrapy
+
 from intelark.items import *
 
 
@@ -17,7 +20,7 @@ class IntelarkPipeline(object):
     def create_path(self, fpath):
         Path(fpath).mkdir(parents=True, exist_ok=True)
 
-    def process_item(self, item, spider):
+    def process_item(self, item: BaseItem, spider: scrapy.Spider):
         if isinstance(item, CPULegendItem):
             # Update legend information
             for i in item:
@@ -62,7 +65,7 @@ class IntelarkPipeline(object):
         newpath = move(tmpf.name, fullpath)
         spider.logger.info(f"renamed {tmpf.name} to {newpath}")
 
-    def close_spider(self, spider):
+    def close_spider(self, spider: scrapy.Spider):
         if spider.name == "cpuspecs":
             # Save legend of different fields encountered in crawling
 
