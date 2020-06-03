@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import urlsplit
+
 import scrapy
 
 from intelark.items import *
