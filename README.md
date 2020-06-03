@@ -25,7 +25,7 @@ After crawling `_legend.json` is written which has explanations for the fields.
 
 ### Single CPU specs spider
     
-    crawl onecpuspec -a url="https://ark.intel.com/content/www/us/en/ark/products/82764/intel-xeon-processor-e5-1630-v3-10m-cache-3-70-ghz.html"
+    scrapy crawl onecpuspec -a url="https://ark.intel.com/content/www/us/en/ark/products/82764/intel-xeon-processor-e5-1630-v3-10m-cache-3-70-ghz.html"
 
 See **CPU specs spider** for info.
     
