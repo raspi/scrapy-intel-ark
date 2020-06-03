@@ -56,6 +56,14 @@ class BaseSpider(scrapy.Spider):
         v = v.strip()
         return v
 
+    # Series-specific CPU list such as Atom CPUs
+    def parse_series(self, response: scrapy.http.Response):
+        for link in response.xpath("//tr/td/a/@href"):
+            if link.root.find("/products/") == -1:
+                self.logger.error("product not found from link, skipping")
+                continue
+            yield scrapy.Request(response.urljoin(link.root), callback=self.parse_specs)
+
     def parse_specs(self, response: scrapy.http.Response):
         """
         Get specifications of one CPU
@@ -162,14 +170,6 @@ class CpuSpecListSpider(BaseSpider):
             for link in response.xpath(f"//div[@data-parent-panel-key='{panelId.root}']/div/div/span/a/@href"):
                 yield scrapy.Request(response.urljoin(link.root), callback=self.parse_series)
 
-    # Series-specific CPU list such as Atom CPUs
-    def parse_series(self, response: scrapy.http.Response):
-        for link in response.xpath("//tr/td/a/@href"):
-            if link.root.find("/products/") == -1:
-                self.logger.error("product not found from link, skipping")
-                continue
-            yield scrapy.Request(response.urljoin(link.root), callback=self.parse_specs)
-
 
 class CpuSpecSpider(BaseSpider):
     """
@@ -193,3 +193,29 @@ class CpuSpecSpider(BaseSpider):
 
     def parse(self, response: scrapy.http.Response):
         yield scrapy.Request(response.url, callback=self.parse_specs)
+
+class CpuSpecSpider(BaseSpider):
+    """
+    Spider for getting CPU specifications for one CPU
+    """
+    name = 'series'
+    allowed_domains = ['ark.intel.com']
+    start_urls = ['https://ark.intel.com/content/www/us/en/ark/products/series/']
+
+    def __init__(self, url: str):
+        if url == "":
+            url = None
+
+        if url is None:
+            raise ValueError("Invalid url given")
+
+        if url.find("/products/") == -1:
+            raise ValueError(f"/products/ not found from url {url}")
+
+        if url.find("/series/") == -1:
+            raise ValueError(f"/series/ not found from url {url}")
+
+        self.start_urls = [url]
+
+    def parse(self, response: scrapy.http.Response):
+        yield scrapy.Request(response.url, callback=self.parse_series)

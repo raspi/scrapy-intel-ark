@@ -28,7 +28,13 @@ After crawling `_legend.json` is written which has explanations for the fields.
     scrapy crawl onecpuspec -a url="https://ark.intel.com/content/www/us/en/ark/products/82764/intel-xeon-processor-e5-1630-v3-10m-cache-3-70-ghz.html"
 
 See **CPU specs spider** for info.
-    
+
+### CPU series spider
+
+Crawl only certain CPU series, for example "2nd Generation Intel® Xeon® Scalable Processors":
+
+    scrapy crawl series -a url="https://ark.intel.com/content/www/us/en/ark/products/series/192283/2nd-generation-intel-xeon-scalable-processors.html"
+
 
 ## `_legend.json`
 
