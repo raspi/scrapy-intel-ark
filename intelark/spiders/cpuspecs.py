@@ -66,6 +66,10 @@ class BaseSpider(scrapy.Spider):
 
     # Series-specific CPU list such as Atom CPUs
     def parse_series(self, response: scrapy.http.Response):
+        # Find Products Home > Product Specifications > Processors breadcrumb
+        if response.xpath("//a[@class='hidden-crumb-xs']/text()").get().strip() != "Processors":
+            raise scrapy.exceptions.CloseSpider("Processors not found in crumb")
+
         for link in response.xpath("//tr/td/a/@href"):
             if link.root.find("/products/") == -1:
                 self.logger.error("product not found from link, skipping")
@@ -76,6 +80,10 @@ class BaseSpider(scrapy.Spider):
         """
         Get specifications of one CPU
         """
+
+        # Find Products Home > Product Specifications > Processors breadcrumb
+        if response.xpath("//a[@class='hidden-crumb-xs']/text()").get().strip() != "Processors":
+            raise scrapy.exceptions.CloseSpider("Processors not found in crumb")
 
         # Get Intel Ark internal CPU id from URL
         arkcpuid = int(urlsplit(response.url).path.strip('/').split('/')[6])
