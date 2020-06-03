@@ -118,7 +118,8 @@ class BaseSpider(scrapy.Spider):
                 legend = "".join(data.xpath("span[@class='label']//text()").getall()).strip()
                 legends[header][k] = self.cleantxt(legend)
 
-                v = data.xpath("span[@class='value']//text()").get().strip()
+                # Get value, such as "5 GHz"
+                v = "".join(data.xpath("span[@class='value']//text()").getall()).strip()
 
                 v = self.cleantxt(v)
 
