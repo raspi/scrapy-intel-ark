@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import scrapy
 
+class BaseItem(dict):
+    pass
 
-class CPUSpecsItem(dict):
+class CPUSpecsItem(BaseItem):
     pass
 
 
-class CPUSpecsUnknownItem(dict):
+class CPUSpecsUnknownItem(BaseItem):
     pass
 
 
-class CPULegendItem(dict):
+# all keys/values from CPU specifications
+# for humans
+class CPULegendItem(BaseItem):
     pass
