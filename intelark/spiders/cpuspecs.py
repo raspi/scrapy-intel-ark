@@ -32,7 +32,7 @@ convertTo = {
     "DiscreteGraphicsComputeUnitCount": int,
     "DiscreteNumDisplaysSupported": int,
     "MemoryMaxSpeedMhz": speedToHz,
-    "PackageSize":toPackage,
+    "PackageSize": toPackage,
     "MaxTDP": toTDP,
     "BusNumPorts": int,
 }
