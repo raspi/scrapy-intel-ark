@@ -2,48 +2,10 @@
 from urllib.parse import urlsplit
 
 import scrapy
+from scrapy.exceptions import CloseSpider
 
+from intelark.converters import *
 from intelark.items import *
-
-
-def floatConv(value: str):
-    fl, unit = value.split(" ")
-    return {"value": float(fl), "unit": unit}
-
-
-def sizeToBytes(value: str):
-    num, unit = value.split(" ")
-    num = int(num)
-
-    units = ["B", "KB", "MB", "GB", "TB"]
-    if unit not in units:
-        raise ValueError(f"unit {unit} not in units")
-
-    for idx, u in enumerate(units):
-        if unit == u:
-            break
-
-        num *= 1024
-
-    return num
-
-
-def speedToHz(value: str):
-    num, unit = value.split(" ")
-    num = float(num)
-
-    units = ["Hz", "kHz", "MHz", "GHz", "THz"]
-    if unit not in units:
-        raise ValueError(f"unit {unit} not in units")
-
-    for idx, u in enumerate(units):
-        if unit == u:
-            break
-
-        num *= 1000.0
-
-    return num
-
 
 convertTo = {
     "NumPCIExpressPorts": int,
@@ -60,6 +22,19 @@ convertTo = {
     "ClockSpeedMax": speedToHz,
     "TurboBoostMaxTechMaxFreq": speedToHz,
     "GraphicsMaxMem": sizeToBytes,
+    "NumDisplaysSupported": int,
+    "MaxMem": sizeToBytes,
+    "EmbeddedDramMB": sizeToBytes,
+    "MaxMemoryBandwidth": sizeToBytes,
+    "UltraPathInterconnectLinks": int,
+    "AVX512FusedMultiplyAddUnits": int,
+    "InstructionSetExtensions": toList,
+    "DiscreteGraphicsComputeUnitCount": int,
+    "DiscreteNumDisplaysSupported": int,
+    "MemoryMaxSpeedMhz": speedToHz,
+    "PackageSize":toPackage,
+    "MaxTDP": toTDP,
+    "BusNumPorts": int,
 }
 
 
