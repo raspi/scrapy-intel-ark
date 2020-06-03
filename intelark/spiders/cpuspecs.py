@@ -111,7 +111,10 @@ class BaseSpider(scrapy.Spider):
                     try:
                         v = convertTo[k](v)
                     except ValueError as e:
-                        raise ValueError(f"FAILED: {k}: {v}")
+                        reason = f"FAILED: {k}: {v}"
+                        # Stop the entire spider (for debugging purposes)
+                        #raise scrapy.exceptions.CloseSpider(reason)
+                        raise ValueError(reason)
 
                 specs[header][k] = v
 
