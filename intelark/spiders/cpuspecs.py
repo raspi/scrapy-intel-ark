@@ -84,12 +84,16 @@ class BaseSpider(scrapy.Spider):
         Get specifications of one CPU
         """
 
+        # Get Intel Ark internal CPU id from URL
+        arkcpuid = int(urlsplit(response.url).path.strip('/').split('/')[6])
+
         cpuname = response.xpath("//div/h1/text()").get()
         cpuname = self.cleantxt(cpuname)
 
         specs = {
             "URL": response.url,
             "name": cpuname,
+            "arkid": arkcpuid,
         }
 
         # Collect explanations of different fields
