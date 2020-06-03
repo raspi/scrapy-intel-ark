@@ -206,7 +206,10 @@ class CpuSpecSpider(BaseSpider):
         if url is None:
             raise ValueError("Invalid url given")
 
+        if url.find("/products/") == -1:
+            self.logger.error("product not found from url, skipping")
+
         self.start_urls = [url]
 
-    def parse(self, response):
-        yield self.parse_specs(response)
+    def parse(self, response: scrapy.http.Response):
+        yield scrapy.Request(response.url, callback=self.parse_specs)
