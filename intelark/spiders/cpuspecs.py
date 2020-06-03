@@ -73,9 +73,9 @@ class BaseSpider(scrapy.Spider):
 
     def cleantxt(self, v: str) -> str:
         v = v.replace("Intel", "")
-        v = v.replace("\u2122", " ")  # tm
-        v = v.replace("\u00ae", " ")  # (c)
-        v = v.replace("\u2021", " ")  #
+        v = v.replace("\u2122", "")  # tm
+        v = v.replace("\u00ae", "")  # (c)
+        v = v.replace("\u2021", "")  #
 
         v = ' '.join(v.split())
         v = v.strip()
