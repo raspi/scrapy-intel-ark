@@ -37,6 +37,14 @@ convertTo = {
     "BusNumPorts": int,
 }
 
+skipIfValue = [
+    "View now",
+]
+
+skipIfKey = [
+    "Product Brief",
+]
+
 
 class BaseSpider(scrapy.Spider):
     """
@@ -95,18 +103,28 @@ class BaseSpider(scrapy.Spider):
 
             for data in section.xpath("ul[@class='specs-list']/li"):
                 # Find specifications under each header
+
+                # Get key, such as "ECC Memory Supported"
                 k = data.xpath("span[@class='value']/@data-key").get()
 
-                if k == "null":
+                legend = "".join(data.xpath("span[@class='label']//text()").getall()).strip()
+
+                if k is None:
+                    k = legend
+
+                if k in skipIfKey:
                     continue
 
-                legend = "".join(data.xpath("span[@class='label']//text()").getall()).strip()
                 legends[header][k] = self.cleantxt(legend)
 
                 # Get value, such as "5 GHz"
                 v = "".join(data.xpath("span[@class='value']//text()").getall()).strip()
 
                 v = self.cleantxt(v)
+
+                if v in skipIfValue:
+                    continue
+
 
                 if v == 'Yes':
                     v = True
@@ -121,7 +139,7 @@ class BaseSpider(scrapy.Spider):
                     except ValueError as e:
                         reason = f"FAILED: {k}: {v}"
                         # Stop the entire spider (for debugging purposes)
-                        #raise scrapy.exceptions.CloseSpider(reason)
+                        # raise scrapy.exceptions.CloseSpider(reason)
                         raise ValueError(reason)
 
                 specs[header][k] = v
