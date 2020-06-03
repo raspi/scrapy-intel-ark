@@ -39,10 +39,14 @@ convertTo = {
 
 skipIfValue = [
     "View now",
+    "Additional Information URL",
+    "Datasheet",
 ]
 
 skipIfKey = [
     "Product Brief",
+    "Additional Information URL",
+    "Datasheet",
 ]
 
 
@@ -132,7 +136,6 @@ class BaseSpider(scrapy.Spider):
 
                 if v in skipIfValue:
                     continue
-
 
                 if v == 'Yes':
                     v = True
