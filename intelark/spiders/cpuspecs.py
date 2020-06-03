@@ -194,9 +194,11 @@ class CpuSpecSpider(BaseSpider):
     def parse(self, response: scrapy.http.Response):
         yield scrapy.Request(response.url, callback=self.parse_specs)
 
-class CpuSpecSpider(BaseSpider):
+
+class SeriesSpider(BaseSpider):
     """
-    Spider for getting CPU specifications for one CPU
+    Spider for getting CPU specifications for series of CPUs
+    Example: 2nd Generation Intel® Xeon® Scalable Processors
     """
     name = 'series'
     allowed_domains = ['ark.intel.com']
