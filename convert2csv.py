@@ -6,10 +6,14 @@ rootProps = ['id', 'name', 'number', 'URL', 'socket', 'price']
 reSubs = [(re.compile(pat), sub) for pat, sub in [
     (r"^" + '|'.join(rootProps) + "$", r''),
     (r"^None$", r''),
-    (r"^Q1'(\d\d)$", r'20\1-01-01'),
-    (r"^Q2'(\d\d)$", r'20\1-04-01'),
-    (r"^Q3'(\d\d)$", r'20\1-07-01'),
-    (r"^Q4'(\d\d)$", r'20\1-10-01'),
+    (r"^Q1\s*'(\d\d)$", r'20\1-01-01'),
+    (r"^Q2\s*'(\d\d)$", r'20\1-04-01'),
+    (r"^Q3\s*'(\d\d)$", r'20\1-07-01'),
+    (r"^Q4\s*'(\d\d)$", r'20\1-10-01'),
+    (r"^Q1\s*'(\d\d\d\d)$", r'\1-01-01'),
+    (r"^Q2\s*'(\d\d\d\d)$", r'\1-04-01'),
+    (r"^Q3\s*'(\d\d\d\d)$", r'\1-07-01'),
+    (r"^Q4\s*'(\d\d\d\d)$", r'\1-10-01'),
     (r"^(\d+)'(\d\d)$", r'20\2-\1-01'),
     (r"^\$(\d+(\.\d+)?).+", r'\1'),
     (r"\$", r''),
@@ -24,6 +28,14 @@ def tryUnitsToNum(value: str):
     value = str(value)
     for re, sub in reSubs:
         value = re.sub(sub, str(value))
+
+    try:
+        num = float(value)
+        if int(num) == num:
+            return str(int(num))
+    except:
+        pass
+
     if len(value.split(" ")) != 2:
         return value
     num, unit = value.split(" ")
@@ -41,6 +53,7 @@ def tryUnitsToNum(value: str):
     }
     if unit not in units:
         return value
+        print(unit)
     return num * units[unit]
 
 
@@ -60,6 +73,6 @@ with open('output.csv', 'w') as out:
                 datam = data[m] if m in data else {}
                 for m2 in meta[m]:
                     colName = m2
-                    val = tryUnitsToNum(str(datam[colName])) if colName in datam else ''
+                    val = tryUnitsToNum(datam[colName]) if colName in datam else ''
                     line += [str(val)]
             out.write(';'.join(line) + '\n')
