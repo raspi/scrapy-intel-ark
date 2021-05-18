@@ -55,7 +55,16 @@ class BaseSpider(scrapy.Spider):
     Base spider for common tasks
     """
 
-    def parse(self, response):
+    allowed_domains = [
+        'ark.intel.com',
+    ]
+
+    start_urls = [
+        'https://ark.intel.com/content/www/us/en/ark.html',
+    ]
+
+    def parse(self, response: scrapy.http.Response):
+        # Use spiders derived from this class
         raise NotImplementedError
 
     def cleantxt(self, v: str) -> str:
@@ -68,10 +77,15 @@ class BaseSpider(scrapy.Spider):
         v = v.strip()
         return v
 
-    # Series-specific CPU list such as Atom CPUs
     def parse_series(self, response: scrapy.http.Response):
+        """
+        Series-specific CPU list such as Atom CPUs
+        :param response:
+        :return:
+        """
+
         # Find Products Home > Product Specifications > Processors breadcrumb
-        if response.xpath("//a[@class='hidden-crumb-xs']/text()").get().strip() != "Processors":
+        if response.xpath("//a[contains(@class, 'hidden-crumb-xs')]/text()").get().strip() != "Processors":
             raise scrapy.exceptions.CloseSpider("Processors not found in crumb")
 
         for link in response.xpath("//tr/td/a/@href"):
@@ -86,7 +100,7 @@ class BaseSpider(scrapy.Spider):
         """
 
         # Find Products Home > Product Specifications > Processors breadcrumb
-        if response.xpath("//a[@class='hidden-crumb-xs']/text()").get().strip() != "Processors":
+        if response.xpath("//a[contains(@class, 'hidden-crumb-xs')]/text()").get().strip() != "Processors":
             raise scrapy.exceptions.CloseSpider("Processors not found in crumb")
 
         # Get Intel Ark internal CPU id from URL
@@ -190,8 +204,6 @@ class CpuSpecListSpider(BaseSpider):
     Spider for getting list of CPUs
     """
     name = 'cpuspecs'
-    allowed_domains = ['ark.intel.com']
-    start_urls = ['https://ark.intel.com/content/www/us/en/ark.html']
 
     def parse(self, response: scrapy.http.Response):
         for panelId in response.xpath("//div[@data-parent-panel-key='Processors']/div/div/@data-panel-key"):
@@ -205,8 +217,6 @@ class CpuSpecSpider(BaseSpider):
     Spider for getting CPU specifications for one CPU
     """
     name = 'onecpuspec'
-    allowed_domains = ['ark.intel.com']
-    start_urls = ['https://ark.intel.com/content/www/us/en/ark/products/']
 
     def __init__(self, url: str):
         if url == "":
@@ -230,8 +240,6 @@ class SeriesSpider(BaseSpider):
     Example: 2nd Generation Intel® Xeon® Scalable Processors
     """
     name = 'series'
-    allowed_domains = ['ark.intel.com']
-    start_urls = ['https://ark.intel.com/content/www/us/en/ark/products/series/']
 
     def __init__(self, url: str):
         if url == "":
